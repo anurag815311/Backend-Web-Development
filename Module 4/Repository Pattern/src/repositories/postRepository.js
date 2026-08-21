@@ -1,26 +1,57 @@
-const postStore = require('../data/postStore');
+const posts = new Map([
+  [
+    1,
+    {
+      id: 1,
+      title: 'First post',
+      body: 'Repository boundaries protect change.',
+      authorId: 7,
+    },
+  ],
+  [
+    2,
+    {
+      id: 2,
+      title: 'Second post',
+      body: 'Services should speak in domain language.',
+      authorId: 8,
+    },
+  ],
+]);
+
+let nextId = 3;
+
+/*
+ * This repository currently uses an in-memory Map.
+ * When Prisma replaces this implementation, only the storage operations
+ * inside this repository will change. The service layer's business rules,
+ * validation, method calls, and expected return values will remain unchanged.
+ */
 
 function findAll() {
-  return [...postStore.posts];
+  return Array.from(posts.values());
 }
 
 function findById(id) {
-  return postStore.posts.find((post) => post.id === Number(id)) || null;
+  return posts.get(Number(id)) || null;
 }
 
 function create(fields) {
+  const id = nextId++;
+
   const post = {
-    id: postStore.nextId(),
+    id,
     ...fields,
   };
 
-  postStore.posts.push(post);
+  posts.set(id, post);
 
   return post;
 }
 
 function update(id, patch) {
-  const post = findById(id);
+  const numericId = Number(id);
+  const post = posts.get(numericId);
 
   if (!post) return null;
 
@@ -36,15 +67,7 @@ function update(id, patch) {
 }
 
 function remove(id) {
-  const index = postStore.posts.findIndex(
-    (post) => post.id === Number(id)
-  );
-
-  if (index === -1) return false;
-
-  postStore.posts.splice(index, 1);
-
-  return true;
+  return posts.delete(Number(id));
 }
 
 module.exports = {
